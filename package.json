@@ -1,0 +1,23 @@
+{
+  "name": "3di_starterkit",
+  "version": "1.0.0",
+  "description": "Example of how to use the 3di api with websockets",
+  "main": "index.js",
+  "scripts": {
+    "start": "node start-proxy.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nens/3di_starterkit.git"
+  },
+  "author": "Tom de Boer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nens/3di_starterkit/issues"
+  },
+  "homepage": "https://github.com/nens/3di_starterkit#readme",
+  "devDependencies": {
+    "express": "^4.17.1"
+  }
+}
