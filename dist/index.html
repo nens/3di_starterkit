@@ -42,7 +42,38 @@
 
     // connect websocket
     
+    const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/?initial_events=true&visualization=true`);
 
+    // keep sending heartbeat to keep simulation running
+    mainWebSocket.onopen = function (event) {
+      mainWebSocket.send(JSON.stringify({event_name: "heartbeat"}));
+      window.setInterval(()=>{
+        mainWebSocket.send(JSON.stringify({event_name: "heartbeat"}));
+      }, 100000)
+    };
+
+    mainWebSocket.onmessage = function (event) {
+      console.log(event.data);
+      if (
+        event.data &&
+        event.data.type == "visualization" &&
+        event.data.data &&
+        event.data.data.layer === "waterdepth"
+      ) {
+        console.log("open waterdepth websocket");
+
+        const waterdepthWebsocket = new WebSocket(event.data.data.websocket.url);
+
+        waterdepthWebsocket.onopen = function (event) {
+          waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":[508726.64175199065,6899855.887760434,544804.9191025938,6934978.702257474]}));
+        }
+        waterdepthWebsocket.onmessage = function (event) {
+          console.log('waterdepth message', event.data)
+        }
+      }
+    }
+
+    
 
   }
 
