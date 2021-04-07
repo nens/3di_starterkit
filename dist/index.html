@@ -1,6 +1,8 @@
 <html>
 <body>
 
+<img id="waterdepth_image"/>
+
 <script>
   const main = async function () {
     
@@ -8,8 +10,9 @@
 
     let simulationObj = {};
     // set id if using an exisiting simulation instead of opening a new one
-    // simulationObj.id = 8262;
+    simulationObj.id = 8268;
 
+    // _____________________________________________________________ START CREATING NEW SIMULATION
     if (!simulationObj.id) {
       // create simulation
       const body = {
@@ -45,7 +48,10 @@
       const actionObj = await actionResponse.json();
       console.log('actionObj', actionObj);
     }
+    // _____________________________________________________________ END CREATING NEW SIMULATION
     
+
+    // _____________________________________________________________ START MAIN WEBSOCKET
     // connect websocket
     const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/?initial_events=true&visualization=true`);
     // const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/8262/?initial_events=true&visualization=true`);
@@ -61,8 +67,9 @@
     mainWebSocket.onmessage = async function (event) {
       console.log('12323',  event.data);
       
-      const parsedData = JSON.parse(event.data)
 
+      // _____________________________________________________________ START WATERDEPTH WEBSOCKET
+      const parsedData = JSON.parse(event.data)
       if (
         parsedData &&
         parsedData.type == "visualization" &&
@@ -85,16 +92,61 @@
         waterdepthWebsocket.onopen = function (event) {
           waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":[508726.64175199065,6899855.887760434,544804.9191025938,6934978.702257474]}));
         }
-        waterdepthWebsocket.onmessage = function (event) {
+        waterdepthWebsocket.onmessage = async function (event) {
           console.log('waterdepth message', event.data);
-          
 
+          // The first 2 bytes say what kind of message this is.
+          const type = event.data.slice(0, 2);
+          const rest = event.data.slice(2);
+          const typeText = await type.text();
+          // other possible message types that are not 2d waterdepth data
+          // if (typeText === '1d') {
+          //   console.log('1d blob message')
+          // }
+          // if (typeText === 'pu') {
+          //   console.log('pump blob message')
+          // }
+          // _____________________________________________________________ START WATERDEPTH 2d DATA HANDLING
+          if (typeText === '2d') {
+            console.log('2d blob message');
+
+              // The blob is a 40-byte header containing timing and bounds
+              // information, plus an image.
+
+              const header = rest.slice(0, 40);
+              const image = rest.slice(40);
+
+              const headerBuffer = await header.arrayBuffer();
+              const headerArray = new Float64Array(headerBuffer);
+
+              const timing = headerArray[0];
+              
+              // Use leaflet to extract the projection
+              // const sw = Leaflet.Projection.SphericalMercator.unproject(
+              //   Leaflet.point(headerArray[1], headerArray[2])
+              // );
+              // const ne = Leaflet.Projection.SphericalMercator.unproject(
+              //   Leaflet.point(headerArray[3], headerArray[4])
+              // );
+              // const data_bounds = Leaflet.latLngBounds(sw, ne);
+
+              const objectUrl = window.URL.createObjectURL(image);
+
+              const imgElement = document.getElementById("waterdepth_image");
+              console.log('image element', imgElement);
+              imgElement.src = objectUrl;
+              imgElement.onload = (function(){
+                console.log('2d image waterdepth loaded');
+                
+                // send to websocket that image was processed. Thus ready to receive new image
+                window.setTimeout(function(){
+                  waterdepthWebsocket.send(JSON.stringify({"processed": timing}));
+                },3000)
+              });
+          }
         }
       }
     }
-
-    
-
   }
 
   main();
