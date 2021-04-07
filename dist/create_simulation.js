@@ -4,7 +4,7 @@ const createSimulation = async function () {
     threedimodel:"575", // id of the threedi model
     organisation:"b08433fa47c1401eb9cbd4156034c679", // uuid of your organisation
     start_datetime:"2021-04-06T12:49:24.063Z", // current time
-    duration: 60*60,
+    duration: 60*60, // 1 hour
   }
   const simulationResponse = await fetch("https://api.staging.3di.live/v3.0/simulations/", {
     method: 'POST', 
@@ -15,7 +15,6 @@ const createSimulation = async function () {
     body: JSON.stringify(body),
   });
   const simulationObj = await simulationResponse.json();
-  console.log('simulationObj', simulationObj);
 
   // initialize simulation
   const actionResponse = await fetch(`https://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/actions/`, {
@@ -30,6 +29,5 @@ const createSimulation = async function () {
     }),
   });
   const actionObj = await actionResponse.json();
-  console.log('actionObj', actionObj);
   return simulationObj;
 } 
