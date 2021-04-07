@@ -1,27 +1,40 @@
 <html>
 <body>
-<!-- input for simulation id number -->
-<label>Id of simulation to follow
+
+<label>
+  <b>Id of simulation to follow:</b> 
   <input 
     id="simulation_id"
     placeholder="fill out ID of simulation you like to conect waterdepth socket with" 
   />
+  </br>
+  You can find the ID of your simulation by mouse-hovering over the title/header in the livesite.
 </label>
 </br>
-<button onclick="main()">Start connecting websocket</button>
 </br>
-<!-- The image that will contain the waterdepth image -->
+<button onclick="startWebsocket()">Start connecting websocket</button>
+</br>
 <img width="944" height="919" style="border-style:solid; border-width: 1px;" id="waterdepth_image" title="waterdepth image"/>
-<script src="create_simulation.js"></script>
+
+
 <script>
-  
-  let main = async function () {
+
+
+  // copied from here: https://gist.github.com/onderaltintas/6649521
+  const degrees2meters = function(lon,lat) {
+    var x = lon * 20037508.34 / 180;
+    var y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
+    y = y * 20037508.34 / 180;
+    return [x, y]
+  }
+
+  let startWebsocket = async function () {
     
     const simulationId = document.getElementById("simulation_id").value;
-    const apiUrl = ((window.location.href.split("dev.")[1]).split(":3000")[0]); // will be 3di.live or staging.3di.live or 3di.tw
+    const variableUrl = ((window.location.href.split("dev.")[1]).split(":3000")[0]); // will be 3di.live or staging.3di.live or 3di.tw
     
     // _____________________________________________________________ START MAIN WEBSOCKET
-    const mainWebSocket = new WebSocket(`wss://api.${apiUrl}/v3.0/simulations/${simulationId}/?initial_events=true&visualization=true`);
+    const mainWebSocket = new WebSocket(`wss://api.${variableUrl}/v3.0/simulations/${simulationId}/?initial_events=true&visualization=true`);
     // keep sending heartbeat to keep simulation running
     mainWebSocket.onopen = function (event) {
       window.setInterval(()=>{
@@ -41,7 +54,7 @@
       ) {
 
         // retrieve waterdepth websocket url
-        const websocketRequest = await fetch (`https://api.${apiUrl}/v3.0/simulations/${simulationId}/visualisations/waterdepth/`, {
+        const websocketRequest = await fetch (`https://api.${variableUrl}/v3.0/simulations/${simulationId}/visualisations/waterdepth/`, {
           method: 'GET', 
           credentials: 'include',
           headers: {
@@ -50,11 +63,35 @@
         })
         const parsedWebsocketUrlRequest = await websocketRequest.json();
 
+        // ____________________________________________________________________ START retrieve simulation and 3di model to get bounding box
+        const simulationRequest = await fetch (`https://api.${variableUrl}/v3.0/simulations/${simulationId}`, {
+          method: 'GET', 
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        })
+        const simulationObj = await simulationRequest.json();
+        const modelRequest = await fetch (`https://api.${variableUrl}/v3.0/threedimodels/${simulationObj.threedimodel_id}`, {
+          method: 'GET', 
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        })
+        const modelObj = await modelRequest.json();
+        const coordArray = modelObj.extent_two_d && modelObj.extent_two_d.coordinates;
+        if (!coordArray || (coordArray && !coordArray[0])) {
+          alert('model has no 2d extend')
+        }
+        const bboxArray = [].concat(degrees2meters(coordArray[0][0], coordArray[0][1])).concat(degrees2meters(coordArray[1][0], coordArray[1][1]));
+        // ____________________________________________________________________ END retrieve simulation and 3di model to get bounding box
+
         // Open new websocket for Waterdepth
         const waterdepthWebsocket = new WebSocket(parsedWebsocketUrlRequest.websocket_url);
         waterdepthWebsocket.onopen = function (event) {
-          // send to waterdepth websocket dimensions, projections and boundingbox of waterdepth image desired. Below bounding box is from bergermeer model
-          waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":[508726.64175199065,6899855.887760434,544804.9191025938,6934978.702257474]}));
+          // send to waterdepth websocket dimensions, projections and boundingbox of waterdepth image desired.
+          waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":bboxArray}));
         }
         waterdepthWebsocket.onmessage = async function (event) {
           // The first 2 bytes say what kind of message this is.
