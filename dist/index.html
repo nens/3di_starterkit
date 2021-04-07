@@ -6,43 +6,49 @@
     
     console.log("3di starterkit runs");
 
-    // create simulation
-    const body = {
-      name:"v2_bergermeer_simple_infil_no_grndwtr_2021-04-06T144924",
-      threedimodel:"575", // id of the threedi model
-      organisation:"b08433fa47c1401eb9cbd4156034c679", // uuid of your organisation
-      start_datetime:"2021-04-06T12:49:24.063Z", // current time
-      duration: 60*60,
+    let simulationOnbj = {};
+    // set id if using an exisiting simulation instead of opening a new one
+    simulationOnbj.id = 8262;
+
+    if (!simulationOnbj.id) {
+      // create simulation
+      const body = {
+        name:"v2_bergermeer_simple_infil_no_grndwtr_2021-04-06T144924",
+        threedimodel:"575", // id of the threedi model
+        organisation:"b08433fa47c1401eb9cbd4156034c679", // uuid of your organisation
+        start_datetime:"2021-04-06T12:49:24.063Z", // current time
+        duration: 60*60,
+      }
+      const simulationResponse = await fetch("https://api.staging.3di.live/v3.0/simulations/", {
+        method: 'POST', 
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body),
+      });
+      simulationOnbj = await simulationResponse.json();
+      console.log('simulationOnbj', simulationOnbj);
+
+      // initialize simulation
+      const actionResponse = await fetch(`https://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/actions/`, {
+        method: 'POST', 
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name:"initialize",
+          timeout:1800
+        }),
+      });
+      const actionObj = await actionResponse.json();
+      console.log('actionObj', actionObj);
     }
-    const simulationResponse = await fetch("https://api.staging.3di.live/v3.0/simulations/", {
-      method: 'POST', 
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body),
-    });
-    const simulationOnbj = await simulationResponse.json();
-    console.log('simulationOnbj', simulationOnbj);
-
-    // initialize simulation
-    const actionResponse = await fetch(`https://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/actions/`, {
-      method: 'POST', 
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name:"initialize",
-        timeout:1800
-      }),
-    });
-    const actionObj = await actionResponse.json();
-    console.log('actionObj', actionObj);
-
-    // connect websocket
     
+    // connect websocket
     const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/?initial_events=true&visualization=true`);
+    // const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/8262/?initial_events=true&visualization=true`);
 
     // keep sending heartbeat to keep simulation running
     mainWebSocket.onopen = function (event) {
@@ -52,23 +58,37 @@
       }, 100000)
     };
 
-    mainWebSocket.onmessage = function (event) {
-      console.log(event.data);
+    mainWebSocket.onmessage = async function (event) {
+      console.log('12323',  event.data);
+      
+      const parsedData = JSON.parse(event.data)
+
       if (
-        event.data &&
-        event.data.type == "visualization" &&
-        event.data.data &&
-        event.data.data.layer === "waterdepth"
+        parsedData &&
+        parsedData.type == "visualization" &&
+        parsedData.data &&
+        parsedData.data.layer === "waterdepth"
       ) {
         console.log("open waterdepth websocket");
 
-        const waterdepthWebsocket = new WebSocket(event.data.data.websocket.url);
+        const websocketRequest = await fetch (`https://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/visualisations/waterdepth/`, {
+          method: 'GET', 
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        })
+        const parsedWebsocketUrlRequest = await websocketRequest.json();
+
+        const waterdepthWebsocket = new WebSocket(parsedWebsocketUrlRequest.websocket_url);
 
         waterdepthWebsocket.onopen = function (event) {
           waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":[508726.64175199065,6899855.887760434,544804.9191025938,6934978.702257474]}));
         }
         waterdepthWebsocket.onmessage = function (event) {
-          console.log('waterdepth message', event.data)
+          console.log('waterdepth message', event.data);
+          
+          
         }
       }
     }
