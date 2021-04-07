@@ -7,21 +7,41 @@
     placeholder="fill out ID of simulation you like to conect waterdepth socket with" 
   />
 </label>
-</br>
-<button onclick="main()">Start connecting websocket</button>
-</br>
 <!-- The image that will contain the waterdepth image -->
-<img width="944" height="919" style="border-style:solid; border-width: 1px;" id="waterdepth_image" title="waterdepth image"/>
+<img id="waterdepth_image"/>
 <script src="create_simulation.js"></script>
 <script>
+  // ________________________________________________________________ START Configuration
+  console.log("3di starterkit runs");
+  let simulationObj = {};
+  // Set simulationObj.id from an exisiting simulation created via the 3di livesite 
+  // You can find the id of your simulation by hovering the mouse over the header title (when having a simulation running in the 3di-livesite)
+  // Below script uses the bounding box of the bergermeer model.
+  // If you want to test another model then adapt the following line:
+  // waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":[508726.64175199065,6899855.887760434,544804.9191025938,6934978.702257474]}));
+  simulationObj.id = 18348;
+  const apiUrl = 'api.3di.live/v3.0';
+  // ________________________________________________________________ END Configuration
   
-  let main = async function () {
+
+
+  const main = async function () {
+    // _____________________________________________________________ START CREATING NEW SIMULATION
+    // If no simulationObj.id is set in the configuration on top, then a new simulation will be made with createSimulation().
+    // The code for createSimulation() can be found in file create_simulation.js
+    // Beware that for this example script this does not work so well, since the simulation created this way can not be edited with the 3di-livesite.
+    // You would thus need to extend this script yourself to start playing the simulation and add for example rain.
+    // To start it is easier to just set simulationObj.id on top of this file 
+    // 
+    if (!simulationObj.id) {
+      // create simulation
+      simulationObj = await createSimulation();
+    }
+    // _____________________________________________________________ END CREATING NEW SIMULATION
     
-    const simulationId = document.getElementById("simulation_id").value;
-    const apiUrl = ((window.location.href.split("dev.")[1]).split(":3000")[0]); // will be 3di.live or staging.3di.live or 3di.tw
-    
+
     // _____________________________________________________________ START MAIN WEBSOCKET
-    const mainWebSocket = new WebSocket(`wss://api.${apiUrl}/v3.0/simulations/${simulationId}/?initial_events=true&visualization=true`);
+    const mainWebSocket = new WebSocket(`wss://${apiUrl}/simulations/${simulationObj.id}/?initial_events=true&visualization=true`);
     // keep sending heartbeat to keep simulation running
     mainWebSocket.onopen = function (event) {
       window.setInterval(()=>{
@@ -41,7 +61,7 @@
       ) {
 
         // retrieve waterdepth websocket url
-        const websocketRequest = await fetch (`https://api.${apiUrl}/v3.0/simulations/${simulationId}/visualisations/waterdepth/`, {
+        const websocketRequest = await fetch (`https://${apiUrl}/simulations/${simulationObj.id}/visualisations/waterdepth/`, {
           method: 'GET', 
           credentials: 'include',
           headers: {
@@ -71,6 +91,16 @@
               const headerArray = new Float64Array(headerBuffer);
               const timing = headerArray[0];
               
+              // // Example code using Leaflet to extract + convert the geographical boundingbox.
+              // // Not needed for this example, since we only show the waterdepth as an image and not on a map
+              // const sw = Leaflet.Projection.SphericalMercator.unproject(
+              //   Leaflet.point(headerArray[1], headerArray[2])
+              // );
+              // const ne = Leaflet.Projection.SphericalMercator.unproject(
+              //   Leaflet.point(headerArray[3], headerArray[4])
+              // );
+              // const data_bounds = Leaflet.latLngBounds(sw, ne);
+
               const objectUrl = window.URL.createObjectURL(image);
               const imgElement = document.getElementById("waterdepth_image");
               imgElement.src = objectUrl;
@@ -85,7 +115,7 @@
     }
   }
 
-  // main();
+  main();
 
 </script>
 
