@@ -19,7 +19,7 @@
 
 <script>
 
-
+  // _______________________________________________________________________________- Coversion function needed for bounding box
   // copied from here: https://gist.github.com/onderaltintas/6649521
   const degrees2meters = function(lon,lat) {
     var x = lon * 20037508.34 / 180;
@@ -28,12 +28,14 @@
     return [x, y]
   }
 
+
+  // _________________________________________________________________________________ Action for button to start websocket
   let startWebsocket = async function () {
     
     const simulationId = document.getElementById("simulation_id").value;
     const variableUrl = ((window.location.href.split("dev.")[1]).split(":3000")[0]); // will be 3di.live or staging.3di.live or 3di.tw
     
-    // _____________________________________________________________ START MAIN WEBSOCKET
+    // _______________________________________________________________________________________ START MAIN WEBSOCKET
     const mainWebSocket = new WebSocket(`wss://api.${variableUrl}/v3.0/simulations/${simulationId}/?initial_events=true&visualization=true`);
     // keep sending heartbeat to keep simulation running
     mainWebSocket.onopen = function (event) {
@@ -44,7 +46,6 @@
 
     mainWebSocket.onmessage = async function (event) {
       const parsedData = JSON.parse(event.data)
-      // _____________________________________________________________ START WATERDEPTH WEBSOCKET
       // wait for message from Main websocket that waterdepth layer is ready
       if (
         parsedData &&
@@ -53,15 +54,7 @@
         parsedData.data.layer === "waterdepth"
       ) {
 
-        // retrieve waterdepth websocket url
-        const websocketRequest = await fetch (`https://api.${variableUrl}/v3.0/simulations/${simulationId}/visualisations/waterdepth/`, {
-          method: 'GET', 
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-        })
-        const parsedWebsocketUrlRequest = await websocketRequest.json();
+        
 
         // ____________________________________________________________________ START retrieve simulation and 3di model to get bounding box
         const simulationRequest = await fetch (`https://api.${variableUrl}/v3.0/simulations/${simulationId}`, {
@@ -87,6 +80,17 @@
         // bboxArray will become array with 4 items [lng,lat,lng,lat] something like [ 518467.75352099596, 6916186.661360913, 528281.4874120578, 6922217.0722862445 ] 
         const bboxArray = [].concat(degrees2meters(coordArray[0][0], coordArray[0][1])).concat(degrees2meters(coordArray[1][0], coordArray[1][1]));
         // ____________________________________________________________________ END retrieve simulation and 3di model to get bounding box
+
+        // ____________________________________________________________________ START WATERDEPTH WEBSOCKET
+        // retrieve waterdepth websocket url
+        const websocketRequest = await fetch (`https://api.${variableUrl}/v3.0/simulations/${simulationId}/visualisations/waterdepth/`, {
+          method: 'GET', 
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        })
+        const parsedWebsocketUrlRequest = await websocketRequest.json();
 
         // Open new websocket for Waterdepth
         const waterdepthWebsocket = new WebSocket(parsedWebsocketUrlRequest.websocket_url);
