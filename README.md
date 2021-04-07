@@ -15,7 +15,7 @@ It is best to see the code in action by following below instructions.
 
 - Are you planning to create your own JavaScript solution for 3di ?  
 
-  If you decide to use [TypeScript](https://www.typescriptlang.org/) then it is possible to use our generated type-definitions from [here](https://github.com/nens/threedi-api-openapi-client) (currently only available for employees of Nelen& Schuurmans).  
+  If you decide to use [TypeScript](https://www.typescriptlang.org/) then it is possible to use our generated type-definitions from [here](https://github.com/nens/threedi-api-openapi-client) (currently only available for employees of Nelen & Schuurmans).  
 
 
 
@@ -25,9 +25,9 @@ Instructions to run this example code contain of 3 parts:
 
 1. Install, cloning and installing this repo
 2. Configuring API calls, by redirecting with etc/hosts file
-3. Starting the simulation. By updating the script in this repo for your simulation. 
+3. Starting the simulation, by updating the script in this repo for your simulation. 
 
-See step to step guide below.  
+See step by step guide below.  
 
 
 ## Install
