@@ -6,11 +6,11 @@
     
     console.log("3di starterkit runs");
 
-    let simulationOnbj = {};
+    let simulationObj = {};
     // set id if using an exisiting simulation instead of opening a new one
-    simulationOnbj.id = 8262;
+    // simulationObj.id = 8262;
 
-    if (!simulationOnbj.id) {
+    if (!simulationObj.id) {
       // create simulation
       const body = {
         name:"v2_bergermeer_simple_infil_no_grndwtr_2021-04-06T144924",
@@ -27,11 +27,11 @@
         },
         body: JSON.stringify(body),
       });
-      simulationOnbj = await simulationResponse.json();
-      console.log('simulationOnbj', simulationOnbj);
+      simulationObj = await simulationResponse.json();
+      console.log('simulationObj', simulationObj);
 
       // initialize simulation
-      const actionResponse = await fetch(`https://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/actions/`, {
+      const actionResponse = await fetch(`https://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/actions/`, {
         method: 'POST', 
         credentials: 'include',
         headers: {
@@ -47,7 +47,7 @@
     }
     
     // connect websocket
-    const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/?initial_events=true&visualization=true`);
+    const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/?initial_events=true&visualization=true`);
     // const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/8262/?initial_events=true&visualization=true`);
 
     // keep sending heartbeat to keep simulation running
@@ -71,7 +71,7 @@
       ) {
         console.log("open waterdepth websocket");
 
-        const websocketRequest = await fetch (`https://api.staging.3di.live/v3.0/simulations/${simulationOnbj.id}/visualisations/waterdepth/`, {
+        const websocketRequest = await fetch (`https://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/visualisations/waterdepth/`, {
           method: 'GET', 
           credentials: 'include',
           headers: {
@@ -88,7 +88,7 @@
         waterdepthWebsocket.onmessage = function (event) {
           console.log('waterdepth message', event.data);
           
-          
+
         }
       }
     }
