@@ -84,6 +84,7 @@
         if (!coordArray || (coordArray && !coordArray[0])) {
           alert('model has no 2d extend')
         }
+        // bboxArray will become array with 4 items [lng,lat,lng,lat] something like [ 518467.75352099596, 6916186.661360913, 528281.4874120578, 6922217.0722862445 ] 
         const bboxArray = [].concat(degrees2meters(coordArray[0][0], coordArray[0][1])).concat(degrees2meters(coordArray[1][0], coordArray[1][1]));
         // ____________________________________________________________________ END retrieve simulation and 3di model to get bounding box
 
