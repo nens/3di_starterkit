@@ -12,7 +12,8 @@
   // Below script uses the bounding box of the bergermeer model.
   // If you want to test another model then adapt the following line:
   // waterdepthWebsocket.send(JSON.stringify({"width":944,"height":919,"crs":"EPSG3857","bbox":[508726.64175199065,6899855.887760434,544804.9191025938,6934978.702257474]}));
-  simulationObj.id = 8271;
+  simulationObj.id = 18348;
+  const apiUrl = 'api.3di.live/v3.0';
   // ________________________________________________________________ END Configuration
   
 
@@ -33,7 +34,7 @@
     
 
     // _____________________________________________________________ START MAIN WEBSOCKET
-    const mainWebSocket = new WebSocket(`wss://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/?initial_events=true&visualization=true`);
+    const mainWebSocket = new WebSocket(`wss://${apiUrl}/simulations/${simulationObj.id}/?initial_events=true&visualization=true`);
     // keep sending heartbeat to keep simulation running
     mainWebSocket.onopen = function (event) {
       window.setInterval(()=>{
@@ -53,7 +54,7 @@
       ) {
 
         // retrieve waterdepth websocket url
-        const websocketRequest = await fetch (`https://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/visualisations/waterdepth/`, {
+        const websocketRequest = await fetch (`https://${apiUrl}/simulations/${simulationObj.id}/visualisations/waterdepth/`, {
           method: 'GET', 
           credentials: 'include',
           headers: {

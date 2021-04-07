@@ -6,7 +6,7 @@ const createSimulation = async function () {
     start_datetime:"2021-04-06T12:49:24.063Z", // current time
     duration: 60*60, // 1 hour
   }
-  const simulationResponse = await fetch("https://api.staging.3di.live/v3.0/simulations/", {
+  const simulationResponse = await fetch(`https://${apiUrl}/simulations/`, {
     method: 'POST', 
     credentials: 'include',
     headers: {
@@ -17,7 +17,7 @@ const createSimulation = async function () {
   const simulationObj = await simulationResponse.json();
 
   // initialize simulation
-  const actionResponse = await fetch(`https://api.staging.3di.live/v3.0/simulations/${simulationObj.id}/actions/`, {
+  const actionResponse = await fetch(`https://${apiUrl}/simulations/${simulationObj.id}/actions/`, {
     method: 'POST', 
     credentials: 'include',
     headers: {
