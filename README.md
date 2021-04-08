@@ -21,7 +21,7 @@ It is best to see the code in action by following below installation.
 3. Install the NPM dependencies.    
    `$ npm install`  
 
-4. To send file requests to your localhost change the /etx/hosts file of your operating system.
+4. To send file requests to your localhost change the /etc/hosts file of your operating system.
 
    Add the following lines to your /etc/hosts file:
 
