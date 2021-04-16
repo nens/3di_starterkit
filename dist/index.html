@@ -162,7 +162,27 @@
     });
     const actionObj = await actionResponse.json();
     window.setTimeout((async function(){
-      const startActionResponse = await fetch(`https://api.${variableUrl}/v3.0/simulations/${simulationObj.id}/actions/`, {
+      // const startActionResponse = await fetch(`https://api.${variableUrl}/v3.0/simulations/${simulationObj.id}/actions/`, {
+      //   method: 'POST', 
+      //   credentials: 'include',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({"name":"start","max_rate":30}),
+      // });
+      // const startActionObj = await startActionResponse.json();
+      for (let i = 0; i < 250; i++) {
+        let startRes = await start(simulationObj);
+        let endRes = await pause(simulationObj);
+      }
+    }),10000)
+    
+    
+    return actionObj;
+  } 
+
+  const start = async function (simulationObj) {
+    const startActionResponse = await fetch(`https://api.${variableUrl}/v3.0/simulations/${simulationObj.id}/actions/`, {
         method: 'POST', 
         credentials: 'include',
         headers: {
@@ -171,11 +191,21 @@
         body: JSON.stringify({"name":"start","max_rate":30}),
       });
       const startActionObj = await startActionResponse.json();
-    }),10000)
-    
-    
-    return actionObj;
-  } 
+      return startActionObj;
+  }
+
+  const pause = async function (simulationObj) {
+    const startActionResponse = await fetch(`https://api.${variableUrl}/v3.0/simulations/${simulationObj.id}/actions/`, {
+        method: 'POST', 
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({"name":"pause","max_rate":30}),
+      });
+      const startActionObj = await startActionResponse.json();
+      return startActionObj;
+  }
 </script>
 
 </body>
