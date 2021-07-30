@@ -103,3 +103,5 @@ Or maybe you like to see more examples? For instance adding rain or showing wate
 Employees, Customers and partners may create a support ticket [here](https://nelen-schuurmans.topdesk.net/).
 
 Employees may also make a github issue [here](https://github.com/nens/3di_starterkit/issues).
+
+Frequently asked questions can be found [here](./QUESTIONS.md)
