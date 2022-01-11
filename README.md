@@ -53,9 +53,10 @@ It is best to see the code in action by following below installation.
 
    [http://dev.3di.tw:3000](http://dev.3di.tw:3000)
 
-   [http://dev.staging.3di.live](http://dev.staging.3di.live)
+   [http://dev.staging.3di.live](http://dev.staging.3di.live:3000)
+   
+   [http://dev.beta.3di.live](http://dev.beta.3di.live:3000)
 
-   http://dev.beta.3di.live
 
 7. The webpage that opens allows you to fill in a "simulation_ID" and connect a waterdepth websocket to it.
 
