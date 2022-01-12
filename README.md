@@ -7,6 +7,40 @@ It is best to see the code in action by following below installation.
 
 
 
+## !important do before installation! Proxy on Chrome browser  
+On Chrome there is the problem that auth cookies are not send to the api.  
+https://github.com/nens/threedi-live-site/issues/906  
+We are unsure if this problem will sooner or later also apply to firefox (because it is a new standard?) or if this is a chrome specific bug. We expect this problem is currently also in Firefox and other browsers.  
+This readme only has a fix for Chrome browser, but probably similar plugins exist for other browsers.  
+
+Use the Modheader chrome plugin to fix this problem.  
+https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj  
+! IMPORTANT ! 
+Via "manage extensions" give the chrome plugin only acces to specific sites:  
+- http://dev.staging.3di.live  
+- http://dev.beta.3di.live  
+- http://dev.3di.live  
+- http://dev.3di.tw  
+
+Now for example when you want to use https://staging.3di.live as a backend during dev do as follows:  
+
+- Login at https://staging.3di.live
+- Copy to your clipboard the value of the 'cookie' from the request header in the '/profile' api call from https://staging.3di.live.
+- Now go to http://dev.staging.3di.live:3000  
+(if yout redirected too fast, try temporarily disabling javascript or pausing in the debugger)   
+- Open the 'Modheader plugin and add a item to the 'Request headers':  
+key: Cookie, value: paste from your clipboard
+![modheader example](./readme_docs/modheader1.png)
+
+
+Now you should be able to use development with Chrome browser.  
+
+
+
+
+
+
+
 
 ## Installation
 
